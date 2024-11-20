@@ -1,0 +1,97 @@
+{
+  "$schema": "https://puremourning.github.io/vimspector/schema/vimspector.schema.json",
+  "configurations": {
+    "base": {
+      "adapter": "vscode-cpptools",
+      "configuration": {
+        "targetArchitecture": "arm64",
+        "request": "launch",
+        "program": "${workspaceRoot}/debug/SDL_DEMO",
+        "cwd": "${workspaceRoot}/sources",
+        "externalConsole": false,
+        "stopOnEntry": true,
+        "MIMode": "lldb",
+        "logging": {
+          "engineLogging": true
+        }       
+      },
+      "breakpoints": {
+        "exception": {
+          "all": "",
+          "cpp_catch": "",
+          "cpp_throw": "",
+          "objc_catch": "",
+          "objc_throw": "",
+          "swift_catch": "",
+          "swift_throw": ""
+        }
+      }
+    },
+    "run-to-entry": {
+      "extends": "base",
+      "default": true
+    },
+    "run-to-breakpoint": {
+      "extends": "base",
+      "configuration": {
+        "externalConsole": false,
+        "stopOnEntry": false
+      }
+    },
+    "run-to-breakpoint-specify-file": {
+      "extends": "base",
+      "configuration": {
+        "program": "${workspaceRoot}/debug/SDL_DEMO",
+        "cwd": "${workspaceRoot}",
+        "stopOnEntry": false
+      }
+    },
+    "calculate-some-variable": {
+      "extends": "base",
+      "variables": {
+        "SIMPLE": "This is some text containing: $HOME",
+        "CALCULATED_LIST": {
+          "shell": [ "uuidgen" ]
+        },
+        "CALCULATED_STR": {
+          "shell": [ "uuidgen" ]
+        }
+      },
+      "configuration": {
+        "args": [
+          "CALCULATED_LIST", "${CALCULATED_LIST}",
+          "SIMPLE", "${SIMPLE}",
+          "CALCULATED_STR", "${CALCULATED_STR}"
+        ]
+      }
+    }
+  },
+  "adapters": {
+    "lldb-vscode": {
+      "variables": {
+        "LLVM": {
+          "shell": "brew --prefix llvm"
+        }
+      },
+      "attach": {
+        "pidProperty": "pid",
+        "pidSelect": "ask"
+      },
+      "command": [
+        "${LLVM}/bin/lldb-vscode"
+      ],
+      "env": {
+        "LLDB_LAUNCH_FLAG_LAUNCH_IN_TTY": "YES"
+      },
+      "name": "lldb"
+    },
+    "CodeLLDB-localbuild": {
+      "extends": "CodeLLDB",
+      "command": [
+        "$HOME/Development/vimspector/CodeLLDB/build/adapter/codelldb",
+        "--port",
+        "${unusedLocalPort}"
+      ]
+    }
+  }
+}

@@ -1,0 +1,3 @@
+/Users/dingpeng/Documents/Projects/SDL_CPP/Chapter01/debug/CMakeFiles/SDL_DEMO.dir
+/Users/dingpeng/Documents/Projects/SDL_CPP/Chapter01/debug/CMakeFiles/edit_cache.dir
+/Users/dingpeng/Documents/Projects/SDL_CPP/Chapter01/debug/CMakeFiles/rebuild_cache.dir
