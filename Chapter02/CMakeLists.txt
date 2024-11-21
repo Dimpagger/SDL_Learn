@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
-project(SDL_DEMO CXX)
+cmake_minimum_required(VERSION 3.10)
 
+project(SDL_DEMO)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -8,42 +8,19 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(CMAKE_OSX_ARCHITECTURES arm64)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
+find_package(fmt CONFIG REQUIRED)
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
+find_package(SDL2_ttf CONFIG REQUIRED)
 
+file(GLOB SRC_FILES 
+    "${PROJECT_SOURCE_DIR}/src/*"
+)
 
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
-find_package(SDL2_ttf REQUIRED)
+add_executable(${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
-file(GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "${CMAKE_CURRENT_LIST_DIR}/sources/*.cpp")
-set(PROJECT_INCLUDE "${CMAKE_CURRENT_LIST_DIR}/sources/")
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE fmt::fmt)
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
+target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_TTF_LIBRARIES})
 
-add_executable(${PROJECT_NAME})
-target_sources(${PROJECT_NAME} PRIVATE ${PROJECT_SOURCES})
-target_include_directories(${PROJECT_NAME} PRIVATE ${PROJECT_INCLUDE})
-include_directories(${SDL2_INCLUDE_DIR}
-                    ${SDL2_IMAGE_INCLUDE_DIR}
-                    ${SDL2_TTF_INCLUDE_DIR})
-target_link_libraries(${PROJECT_NAME} ${SDL2_LIBRARY}
-                             ${SDL2_IMAGE_LIBRARIES}
-                             ${SDL2_TTF_LIBRARIES})
-
-
-
-
-add_definitions( -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} )
-
-# Setting ASSETS_PATH
-if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -O0 -DDEBUG")
-
-    # Set the asset path macro to the absolute path on the dev machine
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="${CMAKE_CURRENT_SOURCE_DIR}/assets/")
-else()
-    # Set the asset path macro in release mode to a relative path that assumes the assets folder is in the same directory as the game executable
-    target_compile_definitions(${PROJECT_NAME} PUBLIC ASSETS_PATH="./assets/")
-endif()
-
-# Set common compiler flags
-# SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wswitch")
-SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall")

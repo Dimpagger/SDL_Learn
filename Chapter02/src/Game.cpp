@@ -1,4 +1,8 @@
 #include "Game.h"
+#include "SDL.h"
+#include "Actor.h"
+#include "SpriteComponent.h"
+#include "SDL_image.h"
 
 
 Game::Game()
@@ -10,9 +14,6 @@ Game::Game()
 }
 
 bool Game::Initialize() {
-
-    height = 300;
-    width = 400;
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
         return false;
@@ -101,6 +102,17 @@ void Game::RemoveActor(Actor* actor) {
     }
 } 
 
+void Game::AddSprite(SpriteComponent* sprite) {
+    int myDrawOrder = sprite->GetDrawOrder();
+    auto iter = mSprites.begin();
+    for (; iter != mSprites.end(); ++iter) {
+        if (myDrawOrder < (*iter)->GetDrawOrder()){
+            break;
+        }
+    }
+    mSprites.insert(iter, sprite);
+}
+
 void Game::UpdateGame() {
     while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
     float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
@@ -110,7 +122,7 @@ void Game::UpdateGame() {
     mTicksCount = SDL_GetTicks();
 
     mUpdatingActors = true;
-    for (auto actor: mAtcors) {
+    for (auto actor: mActors) {
         actor->Update(deltaTime);
     }
     mUpdatingActors = false;
@@ -133,35 +145,5 @@ void Game::UpdateGame() {
 }
 
 void Game::GenerateOutput() {
-    SDL_SetRenderDrawColor(
-            mRenderer,
-            0,0,255,255
-            );
-    SDL_RenderClear(mRenderer);
-
-    SDL_SetRenderDrawColor(mRenderer, 255, 255, 255, 255);
-    SDL_Rect wall{0, 0, width, thickness};
-    SDL_RenderFillRect(mRenderer, &wall);
-
-    wall.y = height - thickness;
-    SDL_RenderFillRect(mRenderer, &wall);
-
-    wall.x = width - thickness;
-    wall.y = 0;
-    wall.w = thickness;
-    wall.h = width;
-    SDL_RenderFillRect(mRenderer, &wall);
-
-    //wall.x = 0;
-    //SDL_RenderFillRect(mRenderer, &wall);
-
-    SDL_Rect paddle{static_cast<int>(mPaddlePos.x), static_cast<int>(mPaddlePos.y-20), 5, 40};
-    SDL_RenderFillRect(mRenderer, &paddle);
-
-    SDL_Rect ball{static_cast<int>(mBallPos.x), static_cast<int>(mBallPos.y-5), 10, 10};
-    SDL_RenderFillRect(mRenderer, &ball);
-
-
-    SDL_RenderPresent(mRenderer);
 }
 

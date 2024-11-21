@@ -36,4 +36,7 @@ class Game {
         bool mIsRunning;
         bool mUpdatingActors;
         class Ship* mShip;
+
+        int width = 400;
+        int height = 300;
 };
