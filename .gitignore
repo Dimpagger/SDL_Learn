@@ -1,1 +1,6 @@
 *.swp
+CMakeUserPresets.json
+*/build/*
+*/debug/*
+*/.cache/*
+

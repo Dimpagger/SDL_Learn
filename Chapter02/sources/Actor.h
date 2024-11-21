@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include "Math.h"
+#include "Game.h"
 
 class Actor {
     public:

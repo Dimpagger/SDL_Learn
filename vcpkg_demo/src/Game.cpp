@@ -1,11 +1,14 @@
 #include "Game.h"
 
+const int thickness = 5;     // 滑块的宽度
+const float paddleH = 10.0f; // 滑块的长度
 
 Game::Game()
     :mWindow(nullptr)
      ,mRenderer(nullptr)
+     ,mTicksCount(0)
      ,mIsRunning(true)
-     ,mUpdatingActors(false)
+     ,mPaddleDir(0)
 {
 }
 
@@ -13,8 +16,10 @@ bool Game::Initialize() {
 
     height = 300;
     width = 400;
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) != 0) {
-        SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+
+    int sdlResult = SDL_Init(SDL_INIT_VIDEO);
+    if (sdlResult != 0) {
+        SDL_Log("unable to initialize SDL: %s", SDL_GetError());
         return false;
     }
 
@@ -25,7 +30,6 @@ bool Game::Initialize() {
             0);
     if (!mWindow) {
         SDL_Log("Failed to create window: %s", SDL_GetError());
-        return false;
     }
 
     mRenderer = SDL_CreateRenderer(
@@ -35,22 +39,18 @@ bool Game::Initialize() {
             );
     if (!mRenderer) {
         SDL_Log("Failed to create renderer: %s", SDL_GetError());
-        return false;
     }
 
-    if (IMG_Init(IMG_INIT_PNG) == 0) {
-        SDL_Log("Unable to initialize SDL_image: %s", SDL_GetError());
-        return false;
-    }
-
-    LoadData();
-    mTicksCount = SDL_GetTicks();
+    mPaddlePos.x = 0.0f;
+    mPaddlePos.y = height/2.0f;
+    mBallPos.x = width/2.0f;
+    mBallPos.y = height/2.0f;
+    mBallVel.x = -100.0f;
+    mBallVel.y = 100.0f;
     return true;
 }
 
 void Game::Shutdown() {
-    UnloadData();
-    IMG_Quit();
     SDL_DestroyRenderer(mRenderer);
     SDL_DestroyWindow(mWindow);
     SDL_Quit();
@@ -77,29 +77,14 @@ void Game::ProcessInput() {
     if (state[SDL_SCANCODE_ESCAPE] || state[SDL_SCANCODE_Q]) {
         mIsRunning = false;
     }
-    mShip->ProcessKeyboard(state);
-}
-
-void Game::AddActor(Actor* actor) {
-    if (mUpdatingActors) {
-        mPendingActors.emplace_back(actor);
-    } else {
-        mActors.emplace_back(actor);
+    mPaddleDir = 0;
+    if (state[SDL_SCANCODE_W] || state[SDL_SCANCODE_K]) {
+        mPaddleDir -=1;
+    }
+    if (state[SDL_SCANCODE_S] || state[SDL_SCANCODE_J]) {
+        mPaddleDir +=1;
     }
 }
-
-void Game::RemoveActor(Actor* actor) {
-    auto iter = std::find(mPendingActors.begin(), mPendingActors.end(), actor);
-    if (iter != mPendingActors.end()){
-        std::iter_swap(iter, mPendingActors.end() - 1);
-        mPendingActors.pop_back();
-    } 
-    iter = std::find(mActors.begin(), mActors.end(), actor);
-    if (iter != mActors.end()) {
-        std::iter_swap(iter, mActors.end() - 1);
-        mActors.pop_back();
-    }
-} 
 
 void Game::UpdateGame() {
     while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
@@ -109,26 +94,36 @@ void Game::UpdateGame() {
     }
     mTicksCount = SDL_GetTicks();
 
-    mUpdatingActors = true;
-    for (auto actor: mAtcors) {
-        actor->Update(deltaTime);
-    }
-    mUpdatingActors = false;
-
-    for (auto pending: mPendingActors) {
-        mActors.emplace_back(pending);
-    }
-    mPendingActors.clear();
-
-    std::vector<Actor*> deadActors;
-    for (auto actor: mActors) {
-        if (actor->GetState() == Actor::EDead) {
-            deadActors.emplace_back(actor);
+    if (mPaddleDir != 0) {
+        mPaddlePos.y += mPaddleDir * 300.0f * deltaTime;
+        if (mPaddlePos.y < (paddleH/2.0f + thickness)) {
+            mPaddlePos.y = paddleH/2.0f + thickness;
+        }
+        if (mPaddlePos.y > (height - paddleH/2.0f - thickness)) {
+            mPaddlePos.y = height - paddleH/2.0f - thickness;
         }
     }
 
-    for (auto actor: deadActors) {
-        delete actor;
+    mBallPos.x += mBallVel.x * deltaTime;
+    mBallPos.y += mBallVel.y * deltaTime;
+
+    float diff = mPaddlePos.y - mBallPos.y;
+    diff = (diff > 0.0f) ? diff : -diff;
+    if (
+            diff <= paddleH / 2.0f &&
+            mBallPos.x <= 5.0f &&
+            mBallPos.x >= 0.0f &&
+            mBallVel.x < 0.0f) {
+        mBallVel.x *= -1.0f;
+    } else if (mBallPos.x <= 0.0f) {
+        mIsRunning = false;
+    } else if (mBallPos.x >= (width - thickness) && mBallVel.x > 0.0f ) {
+        mBallVel.x *= -1.0f;
+    } else if (mBallPos.y >= (height - thickness) && mBallVel.y > 0.0f ) {
+        mBallVel.y *= -1.0f;
+    } else if (mBallPos.y <= thickness && mBallVel.y < 0.0f ) {
+        mBallVel.y *= -1.0f;
+    } else {
     }
 }
 
