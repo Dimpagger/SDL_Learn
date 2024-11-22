@@ -20,7 +20,13 @@ file(GLOB SRC_FILES
 add_executable(${CMAKE_PROJECT_NAME} ${SRC_FILES})
 
 target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE fmt::fmt)
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_LIBRARIES})
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(${CMAKE_PROJECT_NAME} PRIVATE ${SDL2_TTF_LIBRARIES})
 
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    PRIVATE
+    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+)
+
+target_link_libraries(${CMAKE_PROJECT_NAME} 
+    PRIVATE 
+    $<IF:$<TARGET_EXISTS:SDL2_image::SDL2_image>,SDL2_image::SDL2_image,SDL2_image::SDL2_image-static>)

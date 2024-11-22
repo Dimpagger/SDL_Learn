@@ -1,8 +1,10 @@
+
 #include "Game.h"
-#include "SDL.h"
+#include "SDL_image.h"
 #include "Actor.h"
 #include "SpriteComponent.h"
-#include "SDL_image.h"
+#include "BGSpriteComponent.h"
+#include "Ship.h"
 
 
 Game::Game()
@@ -22,7 +24,7 @@ bool Game::Initialize() {
     mWindow = SDL_CreateWindow(
             "SDL_DEMO",
             100, 100, 
-            width, height,
+            1024, 768,
             0);
     if (!mWindow) {
         SDL_Log("Failed to create window: %s", SDL_GetError());
@@ -113,6 +115,11 @@ void Game::AddSprite(SpriteComponent* sprite) {
     mSprites.insert(iter, sprite);
 }
 
+void Game::RemoveSprite(SpriteComponent* sprite) {
+    auto iter = std::find(mSprites.begin(), mSprites.end(), sprite);
+    mSprites.erase(iter);
+}
+
 void Game::UpdateGame() {
     while (!SDL_TICKS_PASSED(SDL_GetTicks(), mTicksCount + 16));
     float deltaTime = (SDL_GetTicks() - mTicksCount) / 1000.0f;
@@ -145,5 +152,71 @@ void Game::UpdateGame() {
 }
 
 void Game::GenerateOutput() {
+    SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(mRenderer);
+    for (auto sprite: mSprites) {
+        sprite->Draw(mRenderer);
+    }
+    SDL_RenderPresent(mRenderer);
 }
+
+void Game::LoadData() {
+    mShip = new Ship(this);
+    mShip->SetPosition(Vector2(100.0f, 384.0f));
+    mShip->SetScale(1.5f);
+
+    Actor* temp = new Actor(this);
+    temp->SetPosition(Vector2(512.0f, 384.0f));
+
+    BGSpriteComponent* bg = new BGSpriteComponent(temp);
+    bg->SetScreenSize(Vector2(1024.0f, 768.0f));
+    std::vector<SDL_Texture*> bgtexs = {
+        GetTexture("assets/Farback01.png"),
+        GetTexture("assets/Farback02.png")
+    };
+    bg->SetBGTextures(bgtexs);
+    bg->SetScrollSpeed(-100.0f);
+    bg = new BGSpriteComponent(temp, 50);
+    bg->SetScreenSize(Vector2(1024.0f, 768.0f));
+    bgtexs = {
+        GetTexture("assets/Stars.png"),
+        GetTexture("assets/Stars.png")
+    };
+    bg->SetBGTextures(bgtexs);
+    bg->SetScrollSpeed(-200.0f);
+}
+
+void Game::UnloadData() {
+    while (!mActors.empty()) {
+        delete mActors.back();
+    }
+    for (auto i: mTextures) {
+        SDL_DestroyTexture(i.second);
+    }
+    mTextures.clear();
+}
+
+SDL_Texture*Game::GetTexture(const std::string& fileName) {
+    SDL_Texture* tex = nullptr;
+    auto iter = mTextures.find(fileName);
+    if (iter != mTextures.end()) {
+        tex = iter->second;
+    } else {
+        SDL_Surface* surf = IMG_Load(fileName.c_str());
+        if (!surf) {
+            SDL_Log("Failed to load texture file %s", fileName.c_str());
+            return nullptr;
+        }
+        tex = SDL_CreateTextureFromSurface(mRenderer, surf);
+        SDL_FreeSurface(surf);
+        if (!tex) {
+            SDL_Log("Failed to convert surface to texture for %s", fileName.c_str());
+            return nullptr;
+        }
+        mTextures.emplace(fileName.c_str(), tex);
+
+    }
+    return tex;
+}
+
 

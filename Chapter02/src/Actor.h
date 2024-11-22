@@ -6,6 +6,7 @@
 class Actor {
     public:
         enum State {EActive, EPaused, EDead};
+
         Actor(class Game* game);
         virtual ~Actor();
 
@@ -14,7 +15,7 @@ class Actor {
         virtual void UpdateActor(float deltaTime);
 
         const Vector2& GetPosition() const { return mPosition; }
-        void setPosition(const Vector2& pos) {mPosition = pos; }
+        void SetPosition(const Vector2& pos) {mPosition = pos; }
         float GetScale() const {return mScale; }
         void SetScale(float scale) { mScale = scale; }
         float GetRotation() const { return mRotation; }
