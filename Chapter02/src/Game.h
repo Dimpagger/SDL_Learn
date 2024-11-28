@@ -17,6 +17,9 @@ class Game {
         void AddSprite(class SpriteComponent* sprite);
         void RemoveSprite(class SpriteComponent* sprite);
 
+        int GetWidth() const { return mWidth; }
+        int GetHeight() const { return mHeight; }
+
         SDL_Texture* GetTexture(const std::string& fileName);
     private:
         void ProcessInput();
@@ -37,6 +40,6 @@ class Game {
         bool mUpdatingActors;
         class Ship* mShip;
 
-        int width = 400;
-        int height = 300;
+        int mWidth = 800;
+        int mHeight = 600;
 };

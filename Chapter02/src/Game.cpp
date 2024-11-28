@@ -24,7 +24,7 @@ bool Game::Initialize() {
     mWindow = SDL_CreateWindow(
             "SDL_DEMO",
             100, 100, 
-            1024, 768,
+            mWidth, mHeight,
             0);
     if (!mWindow) {
         SDL_Log("Failed to create window: %s", SDL_GetError());
@@ -162,28 +162,28 @@ void Game::GenerateOutput() {
 
 void Game::LoadData() {
     mShip = new Ship(this);
-    mShip->SetPosition(Vector2(100.0f, 384.0f));
+    mShip->SetPosition(Vector2(100.0f, static_cast<float>(mHeight)/2));
     mShip->SetScale(1.5f);
 
     Actor* temp = new Actor(this);
-    temp->SetPosition(Vector2(512.0f, 384.0f));
+    temp->SetPosition(Vector2(static_cast<float>(mWidth)/2, static_cast<float>(mHeight)/2));
 
     BGSpriteComponent* bg = new BGSpriteComponent(temp);
-    bg->SetScreenSize(Vector2(1024.0f, 768.0f));
+    bg->SetScreenSize(Vector2(mWidth, mHeight));
     std::vector<SDL_Texture*> bgtexs = {
         GetTexture("assets/Farback01.png"),
         GetTexture("assets/Farback02.png")
     };
     bg->SetBGTextures(bgtexs);
-    bg->SetScrollSpeed(-100.0f);
+    bg->SetScrollSpeed(-10.0f);
     bg = new BGSpriteComponent(temp, 50);
-    bg->SetScreenSize(Vector2(1024.0f, 768.0f));
+    bg->SetScreenSize(Vector2(mWidth, mHeight));
     bgtexs = {
         GetTexture("assets/Stars.png"),
         GetTexture("assets/Stars.png")
     };
     bg->SetBGTextures(bgtexs);
-    bg->SetScrollSpeed(-200.0f);
+    bg->SetScrollSpeed(-20.0f);
 }
 
 void Game::UnloadData() {
@@ -214,6 +214,7 @@ SDL_Texture*Game::GetTexture(const std::string& fileName) {
             return nullptr;
         }
         mTextures.emplace(fileName.c_str(), tex);
+        SDL_Log("Success to load texture file %s", fileName.c_str());
 
     }
     return tex;

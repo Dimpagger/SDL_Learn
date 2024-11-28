@@ -22,6 +22,19 @@ void Ship::UpdateActor(float deltaTime) {
     pos.x += mRightSpeed * deltaTime;
     pos.y += mDownSpeed * deltaTime;
 
+    if(pos.x > getGame()->GetWidth()) {
+        pos.x = getGame()->GetWidth();
+    }
+    if(pos.y > getGame()->GetHeight()) {
+        pos.y = getGame()->GetHeight();
+    }
+    if(pos.y<0) {
+        pos.y=0;
+    }
+    if(pos.x<0){
+        pos.x=0;
+    }
+
     SetPosition(pos);
 }
 
@@ -35,10 +48,10 @@ void Ship::ProcessKeyboard(const uint8_t* state) {
     if (state[SDL_SCANCODE_A]){
         mRightSpeed -= 250.0f;
     }
-    if (state[SDL_SCANCODE_S]){
+    if (state[SDL_SCANCODE_J]){
         mDownSpeed += 300.0f;
     }
-    if (state[SDL_SCANCODE_W]){
+    if (state[SDL_SCANCODE_K]){
         mDownSpeed -= 300.0f;
     }
 }
